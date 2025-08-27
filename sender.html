@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>WebRTC Sender</title>
+    <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
+    <style>
+        body { font-family: sans-serif; padding: 20px; }
+        video { width: 320px; border: 1px solid #ccc; }
+        input { width: 250px; padding: 5px; }
+        button { padding: 6px 10px; }
+    </style>
+</head>
+<body>
+    <h2>Stream Sender</h2>
+    <p>Your local video preview:</p>
+    <video id="localVideo" autoplay muted playsinline></video>
+    <hr>
+    <p>Enter the Receiver's Peer ID below and click Start.</p>
+    <input type="text" id="receiverIdInput" placeholder="Enter Receiver's ID">
+    <button id="startBtn">Start Stream</button>
+
+    <script>
+        const localVideo = document.getElementById('localVideo');
+        const receiverIdInput = document.getElementById('receiverIdInput');
+        const startBtn = document.getElementById('startBtn');
+
+        // init peerjs
+        const peer = new Peer()
+
+        peer.on('open', (id) => {
+            console.log('My PeerJS ID is:', id);
+        });
+
+        startBtn.onclick = async () => {
+            const receiverId = receiverIdInput.value;
+            if (!receiverId) {
+                return alert('Please enter the receiver\'s ID.');
+            }
+
+            try {
+                // Get user's camera and microphone stream 
+                const localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+                localVideo.srcObject = localStream; // show local preview
+
+                // Call the receiver
+                console.log(`Calling peer: ${receiverId}`);
+                const call = peer.call(receiverId, localStream);
+
+                call.on('stream', (remoteStream) => {
+                    console.log('Received stream back from receiver');
+                });
+            } catch (eer) {
+                console.error('Failed to get local stream or call', err);
+            }
+        };
+    </script>
+</body>
+</html>

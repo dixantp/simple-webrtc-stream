@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF=8">
+    <title>WebRTC Receiver</title>
+    <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
+    <style>
+        body { font-family: sans-serif; padding: 20px; background-color: #000; color: #fff; }
+        video { width: 100%; height: auto; }
+        #peerIdDisplay { font-family: monospace; background: #333; padding: 10px; border-radius: 5px; }
+    </style>    
+</head>
+<body>
+    <h2>Stream Receiver</h2>
+    <p>Your Peer ID is: <b id="peerIdDisplay">Initializing...</b></p>
+    <p>Give this ID to the sender.</p>
+    <hr>
+    <video id="remoteVideo" autoplay playsinline></video>
+
+    <script>
+        const remoteVideo = document.getElementById('remoteVideo');
+        const peerIdDisplay = document.getElementById('peerIdDisplay');
+
+        // init peerjs (free cloud server)
+        const peer = new Peer();
+
+        // Show this peer's ID
+        peer.on('open', (id) => {
+            peerIdDisplay.textContent = id;
+        });
+
+        // When a call is received
+        peer.on('call', (call) => {
+            console.log('Receiving incoming call..');
+
+            // answer call and send no stream back
+            call.answer();
+
+            // When the remote stream arrives, show it in the video element
+            call.on('stream', (remoteStream) => {
+                console.log('Stream received');
+                remoteVideo.srcObject = remoteStream;
+            });
+        });
+    </script>
+</body>
+</html>
